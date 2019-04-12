@@ -1,0 +1,24 @@
+#index:
+#    path: /
+#    controller: App\Controller\DefaultController::index
+# config/routes.yaml
+
+
+oc_annonce:
+    path:       /vue-annonces/afficher
+    controller: App\Controller\Annonce1::afficher
+
+    # config/routes.yaml
+
+oc_ann_index:
+    path:       /ann
+    controller: App\Controller\AnnController::index
+
+oc_ann_view:
+    path:       /ann/view/{id}
+    controller: App\Controller\AnnController::view
+
+oc_ann_add:
+    path:       /ann/add
+    controller: App\Controller\AnnController::add
+

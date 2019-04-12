@@ -1,0 +1,34 @@
+{# templates/Advert/index.html.twig #}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>
+			Bienvenue sur ma première page avec OpenClassrooms !
+		</title>
+		<meta charset="UTF-8">
+	</head>
+<body>
+	<h1>Hello {{ page }} </h1>
+	{{ webmaster}}<br>
+	{{ "now"|date('d/m/Y') }}<br>
+	{{ "Il y a %s pommes et %s poires"|format(85, 81) }}<br>
+
+	<p>
+		{% if page < 12 %}
+			Il faut avoir au moins 12 ans pour ce film.
+			{% elseif page < 18 %}
+				OK bon film.
+				{% else %}
+					Un peu vieux pour voir ce film non ?
+		{% endif %}
+	</p>
+
+	<ul>
+		{% set i = 1 %}
+		{% for i in page %}
+		<li>{{ "la page numéro : " ~  i }}</li>
+		{% endfor %}
+	</ul>
+</body>
+</html>
+
