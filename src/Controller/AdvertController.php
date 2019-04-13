@@ -3,10 +3,12 @@
 
 namespace App\Controller;
 
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Twig\Environement;
+use App\Entity\Advert;
 
 /**
  * @Route("/advert")
@@ -28,55 +30,67 @@ class AdvertController extends Controller{
 		// Ici, on récupérera la liste des annonces, puis on la passera au template
 
 		// Mais pour l'instant, on ne fait qu'appeler le template
-		return $this->render('base.html.twig');
+		return $this->render('Advert/index.html.twig', ['page' => $page]);
 	}
 
 	/**
 	* @Route("/view/{id}", name="oc_advert_view", requirements={"id" = "\d+"})
 	*/
 	public function view($id){
-		// Ici, on récupérera l'annonce correspondante à l'id $id
+		// On récupère le repository
+		$repository = $this->getDoctrine()
+		->getManager()
+		->getRepository('App\Entity\Advert')
+		;
 
-		return $this->render('Advert/view.html.twig', [
-		'id' => $id,
-		]);
+		// On récupère l'entité correspondante à l'id $id
+		$advert = $repository->find($id);
+
+		// $advert est donc une instance de OC\PlatformBundle\Entity\Advert
+		// ou null si l'id $id  n'existe pas, d'où ce if :
+		if (null === $advert) {
+		throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
+		}
+
+		// Le render ne change pas, on passait avant un tableau, maintenant un objet
+		return $this->render('Advert/view.html.twig', array(
+		'advert' => $advert
+		));
 	}
 
 	/**
 	* @Route("/add", name="oc_advert_add")
 	*/
-	public function add(Request $request){
-	// La gestion d'un formulaire est particulière, mais l'idée est la suivante :
+	 public function add(Request $request){
+	    // Création de l'entité
+	    $advert = new Advert();
+	    $advert->setTitle('Recherche developpeur java.');
+	    $advert->setAuthor('Youssef');
+	    $advert->setContent("Nous recherchons un développeur java débutant sur Lyon. Blabla…");
+	    // On peut ne pas définir ni la date ni la publication,
+	    // car ces attributs sont définis automatiquement dans le constructeur
 
-	// Si la requête est en POST, c'est que le visiteur a soumis le formulaire
-		if ($request->isMethod('POST')) {
-			// Ici, on s'occupera de la création et de la gestion du formulaire
+	    // On récupère l'EntityManager
+	    $em = $this->getDoctrine()->getManager();
 
-			$this->addFlash('notice', 'Annonce bien enregistrée.');
+	    // Étape 1 : On « persiste » l'entité
+	    $em->persist($advert);
+
+	    // Étape 2 : On « flush » tout ce qui a été persisté avant
+	    $em->flush();
+
+	    // Reste de la méthode qu'on avait déjà écrit
+	    if ($request->isMethod('POST')) {
+			$request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
 
 			// Puis on redirige vers la page de visualisation de cettte annonce
-			return $this->redirectToRoute('oc_advert_view', ['id' => 5]);
-		}
+			return $this->redirectToRoute('oc_advert_view', array('id' => $advert->getId()));
+	    }
 
-		// Si on n'est pas en POST, alors on affiche le formulaire
-		return $this->render('template/Advert/add.html.twig');
-	}
+	    // Si on n'est pas en POST, alors on affiche le formulaire
+	    return $this->render('Advert/add.html.twig', array('advert' => $advert));
+  	}
 
-	/**
-	* @Route("/edit/{id}", name="oc_advert_edit", requirements={"id" = "\d+"})
-	*/
-	public function edit($id, Request $request){
-		// Ici, on récupérera l'annonce correspondante à $id
-
-		// Même mécanisme que pour l'ajout
-		if ($request->isMethod('POST')) {
-			$this->addFlash('notice', 'Annonce bien modifiée.');
-
-			return $this->redirectToRoute('oc_advert_view', ['id' => 5]);
-		}
-
-		return $this->render('template/Advert/edit.html.twig');
-	}
 
 	/**
 	* @Route("/delete/{id}", name="oc_advert_delete", requirements={"id" = "\d+"})
@@ -86,6 +100,6 @@ class AdvertController extends Controller{
 
 		// Ici, on gérera la suppression de l'annonce en question
 
-		return $this->render('template/Advert/delete.html.twig');
+		return $this->render('Advert/delete.html.twig');
 	}
 }

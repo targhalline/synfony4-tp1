@@ -1,0 +1,15 @@
+{# templates/Advert/view.html.twig #}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Affichage de l'annonce {{ advert.getId() }}</title>
+</head>
+<body>
+  <h1>Hello Annonce n°{{ advert.getId() }} !</h1>
+  <p> le titre : {{ advert.title }}</p>
+  <p> l'auteur : {{ advert.author }}</p>
+  <p> le contenu : {{ advert.content }}</p>
+  <p> publié le : {% if advert.date %} {{ advert.date|date('Y-m-d H:i:s') }} {% endif %}</p>
+</body>
+</html>
