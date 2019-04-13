@@ -16,6 +16,11 @@ class Advert{
     private $id;
 
     /**
+    * @ORM\OneToOne(targetEntity="App\Entity\Image", cascade={"persist"})
+    */
+    private $image;
+
+    /**
      * @ORM\Column(type="datetime")
      */
     private $date;
@@ -98,6 +103,18 @@ class Advert{
     public function setPublished(bool $published): self{
         
         $this->published = $published;
+        return $this;
+    }
+
+    public function getImage(): ?Image
+    {
+        return $this->image;
+    }
+
+    public function setImage(?Image $image): self
+    {
+        $this->image = $image;
+
         return $this;
     }
 }
