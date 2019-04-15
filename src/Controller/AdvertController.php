@@ -6,9 +6,13 @@ namespace App\Controller;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Reqsponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Twig\Environement;
 use App\Entity\Advert;
+use App\Entity\Image;
+use App\Entity\Application;
+
 
 /**
  * @Route("/advert")
@@ -52,9 +56,16 @@ class AdvertController extends Controller{
 		throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
 		}
 
+		$em = $this->getDoctrine()->getManager();
+		$listApplications = $em
+		->getRepository('App\Entity\Application')
+		->findBy(array('advert' => $advert))
+		;
+
 		// Le render ne change pas, on passait avant un tableau, maintenant un objet
 		return $this->render('Advert/view.html.twig', array(
-		'advert' => $advert
+		'advert' => $advert,
+		'listApplications' => $listApplications
 		));
 	}
 
@@ -62,22 +73,47 @@ class AdvertController extends Controller{
 	* @Route("/add", name="oc_advert_add")
 	*/
 	 public function add(Request $request){
-	    // Création de l'entité
-	    $advert = new Advert();
-	    $advert->setTitle('Recherche developpeur java.');
-	    $advert->setAuthor('Youssef');
-	    $advert->setContent("Nous recherchons un développeur java débutant sur Lyon. Blabla…");
-	    // On peut ne pas définir ni la date ni la publication,
-	    // car ces attributs sont définis automatiquement dans le constructeur
+	    // Création de l'entité Advert
+		$advert = new Advert();
+		$advert->setTitle('Recherche integrateur Symfony.');
+		$advert->setAuthor('Alexandre');
+		$advert->setContent("Nous recherchons un integrateur Symfony débutant sur Lyon. Blabla…");
 
-	    // On récupère l'EntityManager
-	    $em = $this->getDoctrine()->getManager();
+		 // Création de l'entité Image
+	    $image = new Image();
+	    $image->setUrl('http://sdz-upload.s3.amazonaws.com/prod/upload/job-de-reve.jpg');
+	    $image->setAlt('Job de rêve');
 
-	    // Étape 1 : On « persiste » l'entité
-	    $em->persist($advert);
+	    // On lie l'image à l'annonce
+	    $advert->setImage($image);
 
-	    // Étape 2 : On « flush » tout ce qui a été persisté avant
-	    $em->flush();
+		// Création d'une première candidature
+		$application1 = new Application();
+		$application1->setAuthor('Marine');
+		$application1->setContent("J'ai toutes les qualités requises.");
+
+		// Création d'une deuxième candidature par exemple
+		$application2 = new Application();
+		$application2->setAuthor('Pierre');
+		$application2->setContent("Je suis très motivé.");
+
+		// On lie les candidatures à l'annonce
+		$application1->setAdvert($advert);
+		$application2->setAdvert($advert);
+
+		// On récupère l'EntityManager
+		$em = $this->getDoctrine()->getManager();
+
+		// Étape 1 : On « persiste » l'entité
+		$em->persist($advert);
+
+		// Étape 1 ter : pour cette relation pas de cascade lorsqu'on persiste Advert, car la relation est
+		// définie dans l'entité Application et non Advert. On doit donc tout persister à la main ici.
+		$em->persist($application1);
+		$em->persist($application2);
+
+		// Étape 2 : On « flush » tout ce qui a été persisté avant
+		$em->flush();
 
 	    // Reste de la méthode qu'on avait déjà écrit
 	    if ($request->isMethod('POST')) {
@@ -90,6 +126,32 @@ class AdvertController extends Controller{
 	    // Si on n'est pas en POST, alors on affiche le formulaire
 	    return $this->render('Advert/add.html.twig', array('advert' => $advert));
   	}
+
+	/**
+	* @Route("/edit-img/{id}", name="oc_advert_edit_img", requirements={"id" = "\d+"})
+	*/
+	public function editImageAction($advertId){
+
+		$repository = $this->getDoctrine()
+		->getManager()
+		->getRepository('App\Entity\Advert')
+		;
+		// On récupère l'annonce
+		$advert = $repository->find($advertId);
+		// On modifie l'URL de l'image par exemple
+		$advert->getImage()->setUrl('http://sdz-upload.s3.amazonaws.com/prod/upload/job-de-reve.jpg');
+
+		// On n'a pas besoin de persister l'annonce ni l'image.
+		// Rappelez-vous, ces entités sont automatiquement persistées car
+		// on les a récupérées depuis Doctrine lui-même
+
+		// On déclenche la modification
+		$em->flush();
+
+		return $this->render('Advert/view.html.twig', array(
+		'advert' => $advert
+		));
+	}
 
 
 	/**
