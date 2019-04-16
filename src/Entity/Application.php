@@ -16,11 +16,11 @@ class Application
      */
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Advert")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $advert;
+     /**
+   * @ORM\ManyToOne(targetEntity="App\Entity\Advert", inversedBy="applications")
+   * @ORM\JoinColumn(nullable=false)
+   */
+  private $advert;
 
     /**
      * @ORM\Column(type="string", length=255)

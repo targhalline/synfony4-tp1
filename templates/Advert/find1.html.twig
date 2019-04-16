@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> modification d'annonce</title>
+</head>
+<body>
+	<h1>Liste des annonces est coome suit : </h1>
+	{% for advert in listAdverts %}
+	<p> le titre : {{ advert.title }}</p>
+	<p> l'auteur : {{ advert.author }}</p>
+	<p> le contenu : {{ advert.content }}</p>
+	<p> publié le : {% if advert.date %} {{ advert.date|date('Y-m-d H:i:s') }} {% endif %}</p>
+  	<p> {% if advert.getImage %} <img src='{{ advert.getImage.url }}' alt='{{ advert.getImage.alt }}'> {% endif %}</p>
+	{% endfor %}
+</body>
+</html>
