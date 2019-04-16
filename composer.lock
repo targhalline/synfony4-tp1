@@ -4,7 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
     "content-hash": "0a568a40c2222d08637363b730ee13a5",
+=======
+    "content-hash": "7d0da43d014c13e696d6e1ca3d3d53c4",
+>>>>>>> ch3-p3
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -4301,6 +4305,7 @@
             "time": "2018-12-21T10:10:51+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "nikic/php-parser",
             "version": "v4.2.1",
             "source": {
@@ -4418,6 +4423,8 @@
             "time": "2019-03-11T15:55:09+00:00"
         },
         {
+=======
+>>>>>>> ch3-p3
             "name": "symfony/process",
             "version": "v4.2.5",
             "source": {

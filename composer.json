@@ -67,7 +67,10 @@
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.1",
+<<<<<<< HEAD
         "symfony/maker-bundle": "^1.11",
+=======
+>>>>>>> ch3-p3
         "symfony/web-server-bundle": "4.2.*"
     }
 }
