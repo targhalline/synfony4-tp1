@@ -2,7 +2,10 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use OC\PlatformBundle\Entity\Category;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\AdvertRepository")
@@ -14,6 +17,12 @@ class Advert{
      * @ORM\Column(type="integer")
      */
     private $id;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Category", cascade={"persist"})
+     */
+    private $categories;
+
 
     /**
     * @ORM\OneToOne(targetEntity="App\Entity\Image", cascade={"persist"})
@@ -50,6 +59,27 @@ class Advert{
         // Par défaut, la date de l'annonce est la date d'aujourd'hui
         $this->date = new \Datetime();
         $this->published = true;
+        $this->categories = new ArrayCollection();
+
+    }
+
+    // Notez le singulier, on ajoute une seule catégorie à la fois
+    public function addCategory(Category $category)
+    {
+        // Ici, on utilise l'ArrayCollection vraiment comme un tableau
+        $this->categories[] = $category;
+        }
+
+        public function removeCategory(Category $category)
+        {
+        // Ici on utilise une méthode de l'ArrayCollection, pour supprimer la catégorie en argument
+        $this->categories->removeElement($category);
+        }
+
+        // Notez le pluriel, on récupère une liste de catégories ici !
+        public function getCategories()
+        {
+        return $this->categories;
     }
 
     public function getId(): ?int{
