@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Affichage des categores</title>
+</head>
+<body>
+  <h1>les types des catégores sont : </h1>
+  <ul>
+  {% for types in listCategories %}
+    <li> {{ types.name }} </li>
+  {% endfor %}
+</ul>
+</body>
+</html>

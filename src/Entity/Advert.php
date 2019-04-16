@@ -5,7 +5,8 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use OC\PlatformBundle\Entity\Category;
+use App\Entity\Category;
+use OC\PlatformBundle\Entity\Application;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\AdvertRepository")
@@ -23,6 +24,10 @@ class Advert{
      */
     private $categories;
 
+    /**
+    * @ORM\OneToMany(targetEntity="App\Entity\Application", mappedBy="advert")
+    */
+    private $applications; // Notez le « s », une annonce est liée à plusieurs candidatures
 
     /**
     * @ORM\OneToOne(targetEntity="App\Entity\Image", cascade={"persist"})
@@ -60,6 +65,7 @@ class Advert{
         $this->date = new \Datetime();
         $this->published = true;
         $this->categories = new ArrayCollection();
+        $this->applications = new ArrayCollection();
 
     }
 
@@ -144,6 +150,37 @@ class Advert{
     public function setImage(?Image $image): self
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Application[]
+     */
+    public function getApplications(): Collection
+    {
+        return $this->applications;
+    }
+
+    public function addApplication(Application $application): self
+    {
+        if (!$this->applications->contains($application)) {
+            $this->applications[] = $application;
+            $application->setAdvert($this);
+        }
+
+        return $this;
+    }
+
+    public function removeApplication(Application $application): self
+    {
+        if ($this->applications->contains($application)) {
+            $this->applications->removeElement($application);
+            // set the owning side to null (unless already changed)
+            if ($application->getAdvert() === $this) {
+                $application->setAdvert(null);
+            }
+        }
 
         return $this;
     }
