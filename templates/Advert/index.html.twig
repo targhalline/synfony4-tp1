@@ -1,4 +1,4 @@
-{# templates/Advert/index.html.twig #}
+{# templates/listAdverts/index.html.twig #}
 <!DOCTYPE html>
 <html>
 	<head>
@@ -8,27 +8,54 @@
 		<meta charset="UTF-8">
 	</head>
 <body>
-	<h1>Hello {{ page }} </h1>
-	{{ webmaster}}<br>
-	{{ "now"|date('d/m/Y') }}<br>
-	{{ "Il y a %s pommes et %s poires"|format(85, 81) }}<br>
+	<header>
+		<h1>Hello {{ page }} </h1>
+		{{ webmaster}}<br>
+		{{ "now"|date('d/m/Y') }}<br>
+		{{ "Il y a %s pommes et %s poires"|format(85, 81) }}<br>
 
-	<p>
-		{% if page < 12 %}
-			Il faut avoir au moins 12 ans pour ce film.
-			{% elseif page < 18 %}
-				OK bon film.
-				{% else %}
-					Un peu vieux pour voir ce film non ?
-		{% endif %}
-	</p>
+		<p>
+			{% if page < 12 %}
+				Il faut avoir au moins 12 ans pour ce film.
+				{% elseif page < 18 %}
+					OK bon film.
+					{% else %}
+						Un peu vieux pour voir ce film non ?
+			{% endif %}
+		</p>
 
-	<ul>
-		{% set i = 1 %}
-		{% for i in page %}
-		<li>{{ "la page numéro : " ~  i }}</li>
+		<ul>
+			{% set i = 1 %}
+			{% for i in page %}
+			<li>{{ "la page numéro : " ~  i }}</li>
+			{% endfor %}
+		</ul><hr>
+	</header>
+	<section>
+		{% for list in listAdverts %}
+			<h1>Hello Annonce n°{{ list.Id() }} !</h1>
+			<p> le titre : {{ list.title }}</p>
+			<p> l'auteur : {{ list.author }}</p>
+			<p> le contenu : {{ list.content }}</p>
+			<p> publié le : {% if list.date %} {{ list.date|date('Y-m-d H:i:s') }} {% endif %}</p>
+			<p> {% if list.getImage %} <img src='{{ list.getImage.url }}' alt='{{ list.getImage.alt }}'> {% endif %}</p>
+			<ul>
+				{% for application in list.getApplications %}
+				<li>le {{ application.date|date('Y-m-d H:i:s') }} {{ application.author }} a écrit {{ application.content }}</li>
+				{% else %} <li>Pas d'utilisateur trouvé.</li>
+				{% endfor %}
+			</ul>
+			<p> Le nombre des candidatures jusqu'à maintenant est : {{ list.getApplications|length }}</p>
+			<ul>
+				{% if list.getCategories %}
+					{% for categorie in list.Categories %}
+					<li> cette annonce appartient à la catégorie {{ categorie.name }}</li>
+					{% endfor %}
+					{% else %} <li>cette annonce n'appartient à aucune catégorie.</li>
+					{% endif %}
+			</ul>
 		{% endfor %}
-	</ul>
+	</section>
 </body>
 </html>
 

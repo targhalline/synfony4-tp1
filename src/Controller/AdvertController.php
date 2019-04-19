@@ -16,6 +16,8 @@ use App\Entity\Category;
 use App\Entity\Skill;
 use App\Entity\AdvertSkill;
 use App\Repository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
+
 
 /**
  * @Route("/advert")
@@ -29,8 +31,8 @@ class AdvertController extends Controller{
 
 		// Création d'une première candidature
 		$application = new Application();
-		$application->setAuthor('assil');
-		$application->setContent("Je suis à l'écoute du marché");
+		$application->setAuthor('futur développeur');
+		$application->setContent("Je vais finir ce cours fin mois Avril");
 
 		$repository = $this->getDoctrine()
 		->getManager()
@@ -53,7 +55,7 @@ class AdvertController extends Controller{
 	public function find3(Request $request){
 		$repository = $this->getDoctrine()
 		->getManager()
-		->getRepository('App\Entity\Advert')
+		->getRepository('App\Entity\Advert')->getAdverts()
 		;
 
 		$adverts = $repository->getAdvertWithCategories(array('Reseau', 'Integration'));
@@ -82,7 +84,7 @@ class AdvertController extends Controller{
 	public function find1(Request $request){
 		$repository = $this->getDoctrine()
 		->getManager()
-		->getRepository('App\Entity\Advert')
+		->getRepository('App\Entity\Advert')->getAdverts()
 		;
 		// On récupère le repository
 		$listAdverts = $repository->findBy(
@@ -130,9 +132,18 @@ class AdvertController extends Controller{
 	*/
 	public function index($page){
 
+		$nbrPages = 3;
+		$listAdverts = $this->getDoctrine()
+		->getManager()
+		->getRepository('App\Entity\Advert')
+		->getAdverts($page, $nbrPages);
+
+		// calcul nbr de pages:
+		$pageMax = ceil(count($listAdverts)/$nbrPages);
+		
 		// On ne sait pas combien de pages il y a
 		// Mais on sait qu'une page doit être supérieure ou égale à 1
-		if ($page < 1) {
+		if ($page < 1 or $page > $pageMax) {
 			// On déclenche une exception NotFoundHttpException, cela va afficher
 			// une page d'erreur 404 (qu'on pourra personnaliser plus tard d'ailleurs)
 			throw $this->createNotFoundException('Page "'.$page.'" inexistante.');
@@ -141,7 +152,12 @@ class AdvertController extends Controller{
 		// Ici, on récupérera la liste des annonces, puis on la passera au template
 
 		// Mais pour l'instant, on ne fait qu'appeler le template
-		return $this->render('Advert/index.html.twig', ['page' => $page]);
+		return $this->render('Advert/index.html.twig',array(
+			'page' => $page ,
+			'listAdverts' => $listAdverts,
+			'nbrPages' => $nbrPages
+
+			));
 	}
 
 	/**
@@ -206,7 +222,7 @@ class AdvertController extends Controller{
 		// On récupère le repository
 		$repository = $this->getDoctrine()
 		->getManager()
-		->getRepository('App\Entity\Advert')
+		->getRepository('App\Entity\Advert')->getAdverts()
 		;
 
 		$listTitles = $repository->findByTitle('Recherche developpeur java.');
@@ -295,7 +311,7 @@ class AdvertController extends Controller{
 
 		$repository = $this->getDoctrine()
 		->getManager()
-		->getRepository('App\Entity\Advert')
+		->getRepository('App\Entity\Advert')->getAdverts()
 		;
 		// On récupère l'annonce
 		$advert = $repository->find($advertId);
@@ -326,7 +342,7 @@ class AdvertController extends Controller{
 		$em = $this->getDoctrine()->getManager();
 
 		// On récupère l'annonce $id
-		$advert = $em->getRepository('App\Entity\Advert')->find($id);
+		$advert = $em->getRepository('App\Entity\Advert')->getAdverts()->find($id);
 
 		if (null === $advert) {
 			throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
@@ -367,7 +383,7 @@ class AdvertController extends Controller{
 		$em = $this->getDoctrine()->getManager();
 
 		// On récupère l'annonce $id
-		$advert = $em->getRepository('App\Entity\Advert')->find($id);
+		$advert = $em->getRepository('App\Entity\Advert')->getAdverts()->find($id);
 
 		if (null === $advert) {
 			throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
