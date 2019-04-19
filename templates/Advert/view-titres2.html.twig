@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> remplissage par titre</title>
+</head>
+<body>
+	<h1>Liste des annonces est coome suit : </h1>
+	{% for advert in adverts %}
+	<p> l'auteur : {{ advert.author }}</p>
+	<p> le contenu : {{ advert.content }}</p>
+	<p> commenté le : {% if advert.date %} {{ advert.date|date('Y-m-d H:i:s') }} {% endif %}</p>
+	{% endfor %}
+</body>
+</html>

@@ -11,7 +11,7 @@
   <p> l'auteur : {{ advert.author }}</p>
   <p> le contenu : {{ advert.content }}</p>
   <p> publié le : {% if advert.date %} {{ advert.date|date('Y-m-d H:i:s') }} {% endif %}</p>
-  <p><img src='{{ advert.getImage.url }}' alt='{{ advert.getImage.alt }}'></p>
+  <p> {% if advert.getImage %} <img src='{{ advert.getImage.url }}' alt='{{ advert.getImage.alt }}'> {% endif %}</p>
   <p> Le nombre des candidatures jusqu'à maintenant est : {{ listApplications | length }}</p>
   <ul>
   {% for application in listApplications %}

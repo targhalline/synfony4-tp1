@@ -5,10 +5,27 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\ApplicationRepository")
- */
-class Application
-{
+* @ORM\Entity(repositoryClass="App\Repository\ApplicationRepository")
+* @ORM\HasLifecycleCallbacks()
+*/
+class Application{
+
+    /**
+    * @ORM\PrePersist
+    */
+    public function increase(){
+
+        $this->getAdvert()->increaseApplication();
+    }
+
+    /**
+    * @ORM\PreRemove
+    */
+    public function decrease(){
+    
+        $this->getAdvert()->decreaseApplication();
+    }
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()

@@ -10,6 +10,7 @@ use OC\PlatformBundle\Entity\Application;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\AdvertRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Advert{
     /**
@@ -18,6 +19,11 @@ class Advert{
      * @ORM\Column(type="integer")
      */
     private $id;
+
+    /**
+    * @ORM\Column(name="updated_at", type="datetime", nullable=true)
+    */
+    private $updatedAt;
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\Category", cascade={"persist"})
@@ -59,6 +65,26 @@ class Advert{
     */
     private $published = true;
 
+    /**
+    * @ORM\Column(name="nb_applications", type="integer")
+    */
+    private $nbApplications = 0;
+
+    public function increaseApplication()  {
+        $this->nbApplications++;
+    }
+
+    public function decreaseApplication(){
+        $this->nbApplications--;
+    }
+
+    /**
+    * @ORM\PreUpdate
+    */
+    public function updateDate(){
+        
+        $this->setUpdatedAt(new \Datetime());
+    }
     public function __construct(){
         
         // Par défaut, la date de l'annonce est la date d'aujourd'hui
@@ -164,6 +190,7 @@ class Advert{
 
     public function addApplication(Application $application): self
     {
+        
         if (!$this->applications->contains($application)) {
             $this->applications[] = $application;
             $application->setAdvert($this);
@@ -181,6 +208,30 @@ class Advert{
                 $application->setAdvert(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getNbApplications(): ?int
+    {
+        return $this->nbApplications;
+    }
+
+    public function setNbApplications(int $nbApplications): self
+    {
+        $this->nbApplications = $nbApplications;
 
         return $this;
     }

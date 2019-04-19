@@ -10,20 +10,71 @@ use Symfony\Component\HttpFoundation\Reqsponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Twig\Environement;
 use App\Entity\Advert;
-<<<<<<< HEAD
 use App\Entity\Image;
 use App\Entity\Application;
-
-=======
 use App\Entity\Category;
 use App\Entity\Skill;
 use App\Entity\AdvertSkill;
->>>>>>> ch3-p3
+use App\Repository;
 
 /**
  * @Route("/advert")
  */
 class AdvertController extends Controller{
+
+	/**
+	* @Route("/add-app/{id}", name="oc_advert_add_app", requirements={"id" = "\d+"})
+	*/
+	public function add_application(Request $request, $id){
+
+		// Création d'une première candidature
+		$application = new Application();
+		$application->setAuthor('assil');
+		$application->setContent("Je suis à l'écoute du marché");
+
+		$repository = $this->getDoctrine()
+		->getManager()
+		->getRepository('App\Entity\Advert')
+		;
+		$em = $this->getDoctrine()->getManager();
+		// On récupère l'annonce
+
+		$advert = $repository->find($id);
+		$application->setAdvert($advert);
+
+		$em->persist($application);
+		$em->flush();
+		return $this->redirectToRoute('oc_advert_view', array('id' => $id));
+	}
+
+	/**
+	* @Route("/repository", name="oc_advert_repository")
+	*/
+	public function find3(Request $request){
+		$repository = $this->getDoctrine()
+		->getManager()
+		->getRepository('App\Entity\Advert')
+		;
+
+		$adverts = $repository->getAdvertWithCategories(array('Reseau', 'Integration'));
+		
+		return $this->render('Advert/view-titres1.html.twig', array(
+			'adverts' => $adverts
+		));
+	}
+
+	/**
+	* @Route("/repository1/{limit}", name="oc_advert_repository1", requirements={"limit" = "\d+"} )
+	*/
+	public function find4($limit, Request $request){
+		$repository = $this->getDoctrine()
+		->getManager()
+		->getRepository('App\Entity\Application')
+		;
+
+		$adverts = $repository->getApplicationsWithAdvert($limit);
+		return $this->render('Advert/view-titres2.html.twig', array('adverts' => $adverts));
+	}
  	
  	/**
 	* @Route("/chercher", name="oc_advert_find")
@@ -48,6 +99,29 @@ class AdvertController extends Controller{
 		// Le render ne change pas, on passait avant un tableau, maintenant un objet
 		return $this->render('Advert/find1.html.twig', array(
 		'listAdverts' => $listAdverts
+		));
+	}
+
+	/**
+	* @Route("/cherche-un", name="oc_advert_find2")
+	*/
+	public function find2(Request $request){
+		$repository = $this->getDoctrine()
+		->getManager()
+		->getRepository('App\Entity\Image')
+		;
+		// On récupère le repository
+		$image = $repository->findOneBy(
+			array('url' => 'http://sdz-upload.s3.amazonaws.com/prod/upload/job-de-reve.jpg') // Critere
+		);
+
+		if (null === $image) {
+		throw new NotFoundHttpException("L'image n'existe pas.");
+		}
+
+		// Le render ne change pas, on passait avant un tableau, maintenant un objet
+		return $this->render('find2.html.twig', array(
+		'image' => $image
 		));
 	}
 
@@ -126,10 +200,32 @@ class AdvertController extends Controller{
 	}
 
 	/**
+	* @Route("/view-titres", name="oc_advert_view_titles")
+	*/
+	public function viewTitle(Request $request){
+		// On récupère le repository
+		$repository = $this->getDoctrine()
+		->getManager()
+		->getRepository('App\Entity\Advert')
+		;
+
+		$listTitles = $repository->findByTitle('Recherche developpeur java.');
+
+		if (null === $listTitles) {
+			throw new NotFoundHttpException("il n y a aucun annonce correspond à ce titre.");
+		}
+
+		return $this->render('Advert/view-titres.html.twig', array(
+		'listTitles' => $listTitles
+		));
+	}
+
+
+	/**
 	* @Route("/add", name="oc_advert_add")
 	*/
 	 public function add(Request $request){
-<<<<<<< HEAD
+
 	    // Création de l'entité Advert
 		$advert = new Advert();
 		$advert->setTitle('Recherche integrateur Symfony.');
@@ -148,7 +244,7 @@ class AdvertController extends Controller{
 		$application1 = new Application();
 		$application1->setAuthor('Marine');
 		$application1->setContent("J'ai toutes les qualités requises.");
-=======
+
 	    // Création de l'entité
 	    $advert = new Advert();
 	    $advert->setTitle('Recherche devefefeloppeur java.');
@@ -156,7 +252,6 @@ class AdvertController extends Controller{
 	    $advert->setContent("Nous recherchons unfefef développeur java débutant sur Lyon. Blabla…");
 	    // On peut ne pas définir ni la date ni la publication,
 	    // car ces attributs sont définis automatiquement dans le constructeur
->>>>>>> ch3-p3
 
 		// Création d'une deuxième candidature par exemple
 		$application2 = new Application();
@@ -193,7 +288,6 @@ class AdvertController extends Controller{
 	    return $this->render('Advert/add.html.twig', array('advert' => $advert));
   	}
 
-<<<<<<< HEAD
 	/**
 	* @Route("/edit-img/{id}", name="oc_advert_edit_img", requirements={"id" = "\d+"})
 	*/
