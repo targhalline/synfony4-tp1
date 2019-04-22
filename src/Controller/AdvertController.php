@@ -18,6 +18,17 @@ use App\Entity\AdvertSkill;
 use App\Repository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+
+use App\Form\AdvertType;
+use App\Form\AdvertEditType;
+
+
 
 /**
  * @Route("/advert")
@@ -236,72 +247,82 @@ class AdvertController extends Controller{
 		));
 	}
 
+	/**
+	* @Route("/addFormExt", name="oc_advert_addFormExt")
+	*/
+	 public function addFormExt(Request $request){
+
+		$advert = new Advert();
+		$formBuilder = $this->get('form.factory')->createBuilder(AdvertType::class, $advert);
+		$form = $formBuilder->getForm();
+		if ($request->isMethod('POST') ) {
+			$form->handleRequest($request);
+			if ($form->isValid()) {
+				$em = $this->getDoctrine()->getManager();
+				$em->persist($advert);
+				$em->flush();
+				$request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
+				return $this->redirectToRoute('oc_advert_index');
+			}
+		}
+
+		return $this->render('Advert/add.html.twig', array(
+		'form' => $form->createView(),
+		));
+  	}
 
 	/**
 	* @Route("/add", name="oc_advert_add")
 	*/
 	 public function add(Request $request){
 
-	    // Création de l'entité Advert
+		// On crée un objet Advert
 		$advert = new Advert();
-		$advert->setTitle('Recherche integrateur Symfony.');
-		$advert->setAuthor('Alexandre');
-		$advert->setContent("Nous recherchons un integrateur Symfony débutant sur Lyon. Blabla…");
 
-		 // Création de l'entité Image
-	    $image = new Image();
-	    $image->setUrl('http://sdz-upload.s3.amazonaws.com/prod/upload/job-de-reve.jpg');
-	    $image->setAlt('Job de rêve');
+		// On crée le FormBuilder grâce au service form factory
+		$formBuilder = $this->get('form.factory')->createBuilder(FormType::class, $advert);
 
-	    // On lie l'image à l'annonce
-	    $advert->setImage($image);
+		// On ajoute les champs de l'entité que l'on veut à notre formulaire
+		$formBuilder
+		->add('date',      DateTimeType::class)
+		->add('title',     TextType::class)
+		->add('content',   TextareaType::class)
+		->add('author',    TextType::class)
+		->add('published', CheckboxType::class, array('required' => false))
+		->add('save',      SubmitType::class)
+		;
+		// Pour l'instant, pas de candidatures, catégories, etc., on les gérera plus tard
 
-		// Création d'une première candidature
-		$application1 = new Application();
-		$application1->setAuthor('Marine');
-		$application1->setContent("J'ai toutes les qualités requises.");
+		// À partir du formBuilder, on génère le formulaire
+		$form = $formBuilder->getForm();
 
-	    // Création de l'entité
-	    $advert = new Advert();
-	    $advert->setTitle('Recherche devefefeloppeur java.');
-	    $advert->setAuthor('Youeefssef');
-	    $advert->setContent("Nous recherchons unfefef développeur java débutant sur Lyon. Blabla…");
-	    // On peut ne pas définir ni la date ni la publication,
-	    // car ces attributs sont définis automatiquement dans le constructeur
+		// Si la requête est en POST
+		if ($request->isMethod('POST')) {
+			// On fait le lien Requête <-> Formulaire
+			// À partir de maintenant, la variable $advert contient les valeurs entrées dans le formulaire par le visiteur
+			$form->handleRequest($request);
 
-		// Création d'une deuxième candidature par exemple
-		$application2 = new Application();
-		$application2->setAuthor('Pierre');
-		$application2->setContent("Je suis très motivé.");
+			// On vérifie que les valeurs entrées sont correctes
+			// (Nous verrons la validation des objets en détail dans le prochain chapitre)
+			if ($form->isValid()) {
+				// On enregistre notre objet $advert dans la base de données, par exemple
+				$em = $this->getDoctrine()->getManager();
+				$em->persist($advert);
+				$em->flush();
 
-		// On lie les candidatures à l'annonce
-		$application1->setAdvert($advert);
-		$application2->setAdvert($advert);
+				$request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
 
-		// On récupère l'EntityManager
-		$em = $this->getDoctrine()->getManager();
+				// On redirige vers la page de visualisation de l'annonce nouvellement créée
+				return $this->redirectToRoute('oc_advert_index');
+			}
+		}
 
-		// Étape 1 : On « persiste » l'entité
-		$em->persist($advert);
-
-		// Étape 1 ter : pour cette relation pas de cascade lorsqu'on persiste Advert, car la relation est
-		// définie dans l'entité Application et non Advert. On doit donc tout persister à la main ici.
-		$em->persist($application1);
-		$em->persist($application2);
-
-		// Étape 2 : On « flush » tout ce qui a été persisté avant
-		$em->flush();
-
-	    // Reste de la méthode qu'on avait déjà écrit
-	    if ($request->isMethod('POST')) {
-			$request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
-
-			// Puis on redirige vers la page de visualisation de cettte annonce
-			return $this->redirectToRoute('oc_advert_view', array('id' => $advert->getId()));
-	    }
-
-	    // Si on n'est pas en POST, alors on affiche le formulaire
-	    return $this->render('Advert/add.html.twig', array('advert' => $advert));
+		// À ce stade, le formulaire n'est pas valide car :
+		// - Soit la requête est de type GET, donc le visiteur vient d'arriver sur la page et veut voir le formulaire
+		// - Soit la requête est de type POST, mais le formulaire contient des valeurs invalides, donc on l'affiche de nouveau
+		return $this->render('Advert/add.html.twig', array(
+		'form' => $form->createView(),
+		));
   	}
 
 	/**
@@ -330,7 +351,38 @@ class AdvertController extends Controller{
 		));
 	}
 
+	/**
+	* @Route("/edit/{id}", name="oc_advert_edit_advert", requirements={"id" = "\d+"})
+	*/
+	public function editAdvert($id, Request $request){
 
+		$repository = $this->getDoctrine()
+		->getManager()
+		->getRepository('App\Entity\Advert')
+		;
+		$advert = $repository->find($id);
+		if (null === $advert) {
+			throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
+		}
+		$formBuilder = $this->get('form.factory')->createBuilder(AdvertEditType::class, $advert);
+		$form = $formBuilder->getForm();
+		if ($request->isMethod('POST')) {
+			$form->handleRequest($request);
+			if ($form->isValid()) {
+				$em = $this->getDoctrine()->getManager();
+				$em->persist($advert);
+				$em->flush();
+				$request->getSession()->getFlashBag()->add('notice', 'Annonce bien modifiée.');
+				return $this->redirectToRoute('oc_advert_index');
+			}
+		}
+
+		return $this->render('Advert/add.html.twig', array(
+		'form' => $form->createView(),
+		'id' => $id,
+		));
+  	}
+		
 	/**
 	* @Route("/delete/{id}", name="oc_advert_delete", requirements={"id" = "\d+"})
 =======
