@@ -17,6 +17,7 @@ use App\Entity\Skill;
 use App\Entity\AdvertSkill;
 use App\Repository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -255,7 +256,7 @@ class AdvertController extends Controller{
 		$advert = new Advert();
 		$formBuilder = $this->get('form.factory')->createBuilder(AdvertType::class, $advert);
 		$form = $formBuilder->getForm();
-		if ($request->isMethod('POST') ) {
+		if ($request->isMethod('POST')) {
 			$form->handleRequest($request);
 			if ($form->isValid()) {
 				$em = $this->getDoctrine()->getManager();

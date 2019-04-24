@@ -2,11 +2,19 @@
 
 namespace App\Entity;
 
+
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Category;
 use OC\PlatformBundle\Entity\Application;
+use Gedmo\Mapping\Annotation as Gedmo;
+// N'oubliez pas de rajouter ce « use », il définit le namespace pour les annotations de validation
+use Symfony\Component\Validator\Constraints as Assert;
+// Ajoutez ce use pour le contexte
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+
+use OC\PlatformBundle\Validator\Antiflood;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\AdvertRepository")
@@ -15,10 +23,23 @@ use OC\PlatformBundle\Entity\Application;
 class Advert{
     /**
      * @ORM\Id()
-     * @ORM\GeneratedValue()
+     * @ORM\GeneratedValue²()
      * @ORM\Column(type="integer")
      */
     private $id;
+
+    /** 
+     * @ORM\Column(name="adresse_ip", type="string", length=255, nullable=true)
+     */
+
+    private $ip;
+
+    /* @Assert\IsTrue()
+     */
+    public function isAdvertValid()
+    {
+        return true;
+    }
 
     /**
     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
@@ -37,27 +58,38 @@ class Advert{
 
     /**
     * @ORM\OneToOne(targetEntity="App\Entity\Image", cascade={"persist"})
+    * @Assert\Valid()
     */
     private $image;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Assert\DateTime()
      */
     private $date;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\Length(min=10, minMessage = "le titre doit dépasser des lettres") 
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\Length(
+     *      min = 2,
+     *      minMessage = "Your name must be at least {{ limit }} characters long",
+     * )
      */
     private $author;
 
     /**
      * @ORM\Column(type="text")
+     * @Assert\NotBlank()
      */
+    /**
+     * @Antiflood()
+     */
     private $content;
 
     /**
@@ -232,6 +264,36 @@ class Advert{
     public function setNbApplications(int $nbApplications): self
     {
         $this->nbApplications = $nbApplications;
+
+        return $this;
+    }
+
+    /**
+    * @Assert\Callback
+    */
+    public function isContentValid(ExecutionContextInterface $context)
+    {
+        $forbiddenWords = array('démotivation', 'abandon');
+
+        // On vérifie que le contenu ne contient pas l'un des mots
+        if (preg_match('#'.implode('|', $forbiddenWords).'#', $this->getContent())) {
+            // La règle est violée, on définit l'erreur
+            $context
+            ->buildViolation('Contenu invalide car il contient un mot interdit.') // message
+            ->atPath('content')                                                   // attribut de l'objet qui est violé
+            ->addViolation() // ceci déclenche l'erreur, ne l'oubliez pas
+            ;
+        }
+    }
+
+    public function getIp(): ?string
+    {
+        return $this->ip;
+    }
+
+    public function setIp(?string $ip): self
+    {
+        $this->ip = $ip;
 
         return $this;
     }
