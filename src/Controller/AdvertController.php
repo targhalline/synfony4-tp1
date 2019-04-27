@@ -3,6 +3,7 @@
 
 namespace App\Controller;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,8 +18,6 @@ use App\Entity\Skill;
 use App\Entity\AdvertSkill;
 use App\Repository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -250,6 +249,7 @@ class AdvertController extends Controller{
 
 	/**
 	* @Route("/addFormExt", name="oc_advert_addFormExt")
+	* @Security("has_role('ROLE_AUTEUR')")
 	*/
 	 public function addFormExt(Request $request){
 

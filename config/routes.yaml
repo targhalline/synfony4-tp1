@@ -21,4 +21,14 @@ oc_ann_view:
 oc_ann_add:
     path:       /ann/add
     controller: App\Controller\AnnController::add
+    
+login:
+    path: /login
+    defaults:
+        _controller: App\Controller\SecurityController:loginAction
 
+login_check:
+    path: /login_check
+
+logout:
+    path: /logout
